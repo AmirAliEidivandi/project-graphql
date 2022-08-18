@@ -2,9 +2,11 @@ require("dotenv").config();
 require("./config/db")(process.env.MONGO_URI);
 const express = require("express");
 const colors = require("colors");
+const cors = require("cors");
 const { graphqlHTTP } = require("express-graphql");
 const app = express();
 
+app.use(cors());
 const schema = require("./schema/schema");
 
 app.use(
