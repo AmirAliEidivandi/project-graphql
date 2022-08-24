@@ -1,9 +1,9 @@
-const { GraphQLObjectType, GraphQLID, GraphQLString, GraphQLSchema, GraphQLList, GraphQLEnumType } = require("graphql");
-
 const Project = require("../models/Project");
 const Client = require("../models/Client");
 
-// Project type
+const { GraphQLObjectType, GraphQLID, GraphQLString, GraphQLSchema, GraphQLList, GraphQLEnumType } = require("graphql");
+
+// Project Type
 const ProjectType = new GraphQLObjectType({
     name: "Project",
     fields: () => ({
@@ -20,7 +20,7 @@ const ProjectType = new GraphQLObjectType({
     }),
 });
 
-// Client type
+// Client Type
 const ClientType = new GraphQLObjectType({
     name: "Client",
     fields: () => ({
@@ -63,11 +63,11 @@ const RootQuery = new GraphQLObjectType({
     },
 });
 
-// mutations
+// Mutations
 const mutation = new GraphQLObjectType({
     name: "Mutation",
     fields: {
-        // add a client
+        // Add a client
         addClient: {
             type: ClientType,
             args: {
@@ -85,17 +85,23 @@ const mutation = new GraphQLObjectType({
                 return client.save();
             },
         },
-        // delete a client
+        // Delete a client
         deleteClient: {
             type: ClientType,
             args: {
                 id: { type: GraphQLID },
             },
             resolve(parent, args) {
-                return Client.findByIdAndDelete(args.id);
+                Project.find({ clientId: args.id }).then((projects) => {
+                    projects.forEach((project) => {
+                        project.remove();
+                    });
+                });
+
+                return Client.findByIdAndRemove(args.id);
             },
         },
-        // add a project
+        // Add a project
         addProject: {
             type: ProjectType,
             args: {
@@ -125,17 +131,17 @@ const mutation = new GraphQLObjectType({
                 return project.save();
             },
         },
-        // delete a project
+        // Delete a project
         deleteProject: {
             type: ProjectType,
             args: {
                 id: { type: GraphQLID },
             },
             resolve(parent, args) {
-                return Project.findByIdAndDelete(args.id);
+                return Project.findByIdAndRemove(args.id);
             },
         },
-        // update a project
+        // Update a project
         updateProject: {
             type: ProjectType,
             args: {
@@ -163,9 +169,7 @@ const mutation = new GraphQLObjectType({
                             status: args.status,
                         },
                     },
-                    {
-                        new: true,
-                    }
+                    { new: true }
                 );
             },
         },
